@@ -27,4 +27,4 @@ def products():
 @app.route('/products/<int:product_id>')
 def get_products():
     product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
-    return products_schema.jsonify(product)
+    return products_schema.jsonify([product])
