@@ -1,5 +1,5 @@
 # wsgi.py
-from flask import Flask
+from flask import Flask, request
 from config import Config
 import os
 import logging
@@ -25,14 +25,32 @@ def products():
     return products_schema.jsonify(products)
 
 @app.route('/products/<int:product_id>')
-def get_products():
+def get_products(product_id):
     product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
     return products_schema.jsonify([product])
 
-
-@app.route('/products/<int:product_id>')
-def update_products(name):
+@app.route('/products/<int:product_id>', methods=['DELETE'])
+def delete_products(product_id):
     product = db.session.query(Product).get(product_id)
+    db.session.delete(product)
+    db.session.commit()
+    return f"Well Deleted : {product.name}",202
+
+@app.route('/products/<int:product_id>', methods=['PATCH'])
+def update_products(product_id):
+    req = request.get_json("name")
+    name = req['name']
+    product = db.session.query(Product).get(product_id)
+    product.name = name
+    db.session.add(product)
+    db.session.commit()
+    return products_schema.jsonify([product])
+
+@app.route('/products', methods=['POST'])
+def create_products():
+    req = request.get_json("name")
+    name = req['name']
+    product = Product()
     product.name = name
     db.session.add(product)
     db.session.commit()
