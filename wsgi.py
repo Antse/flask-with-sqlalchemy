@@ -28,3 +28,12 @@ def products():
 def get_products():
     product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
     return products_schema.jsonify([product])
+
+
+@app.route('/products/<int:product_id>')
+def update_products(name):
+    product = db.session.query(Product).get(product_id)
+    product.name = name
+    db.session.add(product)
+    db.session.commit()
+    return products_schema.jsonify([product])
