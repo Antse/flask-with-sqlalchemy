@@ -27,7 +27,7 @@ def products():
 @app.route('/products/<int:product_id>')
 def get_products(product_id):
     product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
-    return products_schema.jsonify([product])
+    return product_schema.jsonify(product)
 
 @app.route('/products/<int:product_id>', methods=['DELETE'])
 def delete_products(product_id):
