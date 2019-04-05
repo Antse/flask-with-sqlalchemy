@@ -1,23 +1,33 @@
 # wsgi.py
-from flask import Flask, request
-from config import Config
 import os
 import logging
+
+from flask import Flask, request, render_template
+from flask_admin import Admin
+from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
+
+from config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
+
+
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
 from models import Product
 from schemas import products_schema
+from flask_admin.contrib.sqla import ModelView
+
+admin = Admin(app, name='Back-office', template_mode='bootstrap3')
+admin.add_view(ModelView(Product, db.session)) # `Product` needs to be imported before
 
 @app.route('/hello')
 def hello():
-    return "Hello World!"
+    products = db.session.query(Product).all()
+    return render_template('home.html', products=products)
 
 @app.route('/products')
 def products():
@@ -27,7 +37,7 @@ def products():
 @app.route('/products/<int:product_id>')
 def get_products(product_id):
     product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
-    return product_schema.jsonify(product)
+    return products_schema.jsonify([product])
 
 @app.route('/products/<int:product_id>', methods=['DELETE'])
 def delete_products(product_id):
