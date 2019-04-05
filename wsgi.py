@@ -1,5 +1,5 @@
 # wsgi.py
-from flask import Flask, request
+from flask import Flask, request, render_template
 from config import Config
 import os
 import logging
@@ -17,7 +17,8 @@ from schemas import products_schema
 
 @app.route('/hello')
 def hello():
-    return "Hello World!"
+    products = db.session.query(Product).all()
+    return render_template('home.html', products=products)
 
 @app.route('/products')
 def products():
@@ -27,7 +28,7 @@ def products():
 @app.route('/products/<int:product_id>')
 def get_products(product_id):
     product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
-    return product_schema.jsonify(product)
+    return products_schema.jsonify([product])
 
 @app.route('/products/<int:product_id>', methods=['DELETE'])
 def delete_products(product_id):
